@@ -194,6 +194,15 @@ Ao trabalhar em um projeto utilizando *docker*, nos necessitamos sempre estar at
 
 Dessa forma, podemos editar os códigos fonte a vontade sem nos preocuparmos com o *rebuild* da imagem e regerar o contêiner.
 
+
+### Criando volumes somente leitura
+Em alguns casos, o volume utilizado deve ter acesso restrito apenas para leitura do conteúdo armazenado. Dessa forma, o Docker dispõe 
+de um parâmetro para especificar esse tipo de comportamento ao gerar o volume. Veja no exemplo a seguir:
+
+``` # docker run -d -p 83:80 --name my_container_3 -v /home/usuario/curso_docker/volumes:/var/www/html:ro --rm my_image```
+
+Observe que a única coisa a mudar na forma vista até agora é a adição de um parâmetro ':ro' ao final do PATH, o mesmo do WORKDIR no contêiner.
+
 ### Removendo volumes
 
 Você já deve estar familiarizado com a estrutura dos comandos do Docker, afinal tudo sempre começa com ``` docker ``` seguido do nome da estrutura com a qual deseja trabalhar, seguida de uma ação e por fim o alvo dessa ação.  Tudo o que vem imediatamente após o comando docker diz muito sobre o que o usuário deseja trabalhar. Ex:
