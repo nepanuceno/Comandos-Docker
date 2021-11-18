@@ -189,7 +189,7 @@ Dessa forma, os arquivos agora aparecerão diretamente no seu projeto, na sua m�
 Por ser fora do contêiner, o *Docker* não lista *bind mounts*, pois não é papel dele gerenciar este tipo de volume e sim do *Devops*.
 
 #### Detalhe importante
-Ao trabalhar em um projeto utilizando *docker*, nos necessitamos sempre estar atualizando o código fonte de nossas aplicações, e seria muito inconveniente se a casa vez que precisássemos atualizar algo tivéssemos que refazer o *build* da imagem e reexecutar a montagem do contêiner. Para resolver esse inconveniente, podemos utilizar o próprio *bind mount*, indicando o diretório de montagem para o *path* do projeto na maquina local e o destino para o *path* do diretório de publicação do projeto no contêiner, assim, toda vez que fizermos uma alteração no projeto, tudo já estará acessível pelo contêiner.
+Ao trabalhar em um projeto utilizando *docker*, nos necessitamos sempre estar atualizando o código fonte de nossas aplicações, e seria muito inconveniente se a cada vez que precisássemos atualizar algo tivéssemos que refazer o *build* da imagem e reexecutar a montagem do contêiner. Para resolver esse inconveniente, podemos utilizar o próprio *bind mount*, indicando o diretório de montagem para o *path* do projeto na maquina local e o destino para o *path* do diretório de publicação do projeto no contêiner, assim, toda vez que fizermos uma alteração no projeto, tudo já estará acessível pelo contêiner.
 ``` # docker run -d -p 81:80 --name my_container_2 -v /home/usuario/curso_docker/volumes:/var/www/html --rm my_image```
 
 Dessa forma, podemos editar os códigos fonte a vontade sem nos preocuparmos com o *rebuild* da imagem e regerar o contêiner.
