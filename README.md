@@ -216,4 +216,133 @@ Se precisarmos remover vários volumes de uma só vez, basta utilizar o comando 
 ``` # docker volume prune ```
 Lembrando que os volumes que serão apagados são somente os que não estão sendo utilizados por algum contêiner.
 
+
+
+## Networks
+
+### Tipos de conexão
+
+#### Externa
+Aqui estamos num tópico muito interessante e útil, a comunicação dos nossos contêineres.
+Um container pode se comunicar com a rede externa, intranet, internet etc. Essa comunicação é a mais comum dentre os contêineres, pois a maioria dos serviços executados por eles depende de algo externo a eles mesmo, por exemplo a comunicação com uma API ou serviços de terceiros.
+
+
+#### Host
+
+Essa modalidade consite na comunicação com o host local, ou seja, a máquina que estava executando o Docker (seu computador).
+
+#### Entre contêiners
+
+Esta é uma modalidade bastante usada para serviços distribuidos, onde cada serviço tem o seu próprio contêiner exclusivo. Cominicação entre contêineres ocorre muito em serviços web, onde o contêiner do servidor web se comunica com o contêiner do serviço de banco de dados, com o contêiner do serviço de *cache* e muitos outros.
+
+
+### Tipos de redes (drivers)
+
+- Bridge: o mais comum, utilizado na grande maioria dos casos de quando um contêiner preocisa se comunicar;
+- Host: Pertmite a conexão entre contêiner e a máquina que está fazendo host do Docker.
+- macvlan: Permite a conexão a um contêiner por meio de um endereço MAC;
+- none: remove todas as redes de um contêiner;
+- plugins: Permite plugins de terceiros para criar outros tipos de rede.
+
+
+### Listando redes
+
+Por padrão, o docker já define três redes. Confira executando o comando a seguir:
+
+```# docker network ls```
+
+Este comando lista todas as redes existentes no docker.
+
+### Criando Redes
+
+#### Rede bridge
+Para criar uma rede, utiliza-se o comando ```# docker network create minharede ```. Observe que o tipo de rede foi omitido no comando de criação, porém o docker por padrão define o tipo de rede como bridge.
+
+Uma rede do tipo bridge por padrão já se comunica com o mundo externo, sendo necessário apenas o programador da aplicação definir o endereço de comunicação no código fonte, por exemplo, um request à uma API remota.
+
+#### Rede host
+Para definir a comunicação com a máquina host, o endereço de request deverá ser ```'host.docker.internal'```, dessa forma o docker já saberá que a comunicação é com a maquina host.
+
+#### Rede macvlan
+
+Para definir um tipo de rede, o docker exige uma flag -d seguida do tipo de rede desejado. Veja no exemplo:
+
+``` # docker network create -d macvlan ```
+
+### Remover Rede
+
+``` docker network rm minharede ```
+
+#### Remover redes não utilizadas
+
+``` docker network prune ```
+
+Muito cuidado ao utilizar este comando, pois ele exlcuirá toadas as redes que não estiverem sendo utilizadas no momento, preservando sempre as redes padrão do Docker.
+
+### Conectar dois contêineres
+
+Primeiro vamos criar uma rede do tipo bridge para conectar os contêineres.
+
+``` # docker network create minharede ```
+
+De posse da rede, agora podemos executar o contêiner setando a rede que ele deverá utilizar. Para isso, o docker disponibiliza uma flag ``` --network ``` seguida do nome da rede que acabamos de criar no comando anterior.
+
+```# docker run -d -p 3306:3306 --name mysql_container --rm --network minharede -e MYSQL_EMPTY_PASSWORD=True imagem_mysql```
+
+
+Nesse comando podemos notar uma novidade, a flag ```-e``` seguida de uma definição de constante. Essa flag indica a criação de uma variável de ambinete no sistema do contêiner, essa variável de ambiente indicará ao myslq que ele poderá aceitar conexões com o password vazio. 
+
+Pronto, acabamos de executar um container conectada à uma rede bridge personalizada, por onde a aplicação de outro contêiner também conctado à mesma rede irá acessar o banco mysql de forma satisfatória.
+
+Na aplicação que se conectará ao serviço MySQL no contêiner que acabamos de gerar, temos em algum lugar o endereço indicando onde está rodando o serviço, supomos que seja uma plicação PHP Laravel. Neste caso, agora esse endereço passará a ser o nome do contêiner que forneçe o serviço de banco, no caso deste exemplo, será "mysql_container". No Laravel, essa configuração fica no arquivo .env na raiz do projeto. Ex:
+
+```mermaind
+APP_ENV=local
+APP_DEBUG=true
+APP_KEY=YOUR_API_KEY
+
+DB_HOST=mysql_container
+DB_DATABASE=YOUR_DATABASE
+DB_USERNAME=YOUR_USERNAME
+DB_PASSWORD=YOUR_PASSWORD
+
+CACHE_DRIVER=file
+SESSION_DRIVER=file
+QUEUE_DRIVER=sync
+
+MAIL_DRIVER=smtp
+MAIL_HOST=mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+```
+
+Agora vamos conectar mais um contêiner à rede 'minharede'
+
+```# docker run -d -p 8080:80 --name laravel_container --rm --network minharede imagem_laravel```
+
+O contêiner que acabou de ser criado possui o serviço de hospedagem de uma aplicação Laravel e o seu arquivo .env está configurado com a variável ```'DB_HOST=mysql_container'``` onde o valor de 'DB_HOST' é o nome do container que fornece o serviço do MySQL.
+
+Pronto, agora temos a comunicação via rede entre dois contêineres.
+
+### Conectar/Desconectar um contêiner a uma rede em tempo de execução
+
+Temos também a possibilidade de conectar um contêiner já em execução a uma determinada rede. Primeiro temos que saber o CONTAINER ID respectivo ao contêiner que desejamos conectar à rede. Para isso, basta executar o ```# docker ps``` e identificar o contêiner desejado. Agora é só conecta-lo à rede desejada usando o comando a seguir:
+
+```# docker connect <nome_da_rede> <CONTAINER_ID>```
+
+Dessa forma, o contêiner será conectado à rede informada.
+
+
+Para desconectar, vamos utilizar um comando bastante parecido
+```# docker disconnect <nome_da_rede> <CONTAINER_ID>```
+
+### Inspecionar um Rede
+
+Para verificarmos as caracteristicas de uma rede, como data de criação, ip, tipo de conexão etc, podemos utilizar um comando para inspecionar a rede e obtermos essas e outras informações. Para inspecionar uma rede, podemos utilizar o comando *inspect* e indicar a rede alvo da inspeção. Ex:
+``` docker network inspect <nome_da_rede>```
+
+Pode-se utilizar o ID da REDE ao invés do nome para indocar qual rede inspecionar, e o resultado será o mesmo.
+
+
 > Written with [StackEdit](https://stackedit.io/).
