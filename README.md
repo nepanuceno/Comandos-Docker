@@ -345,4 +345,21 @@ Para verificarmos as caracteristicas de uma rede, como data de criação, ip, ti
 Pode-se utilizar o ID da REDE ao invés do nome para indocar qual rede inspecionar, e o resultado será o mesmo.
 
 
+# Referências
+Docker Oficial
+https://docs.docker.com/get-docker/ 
+
+Imagens Oficiais do Docker
+https://hub.docker.com
+
+4Linux
+https://blog.4linux.com.br/docker-compose-explicado/
+
+Docker para Desenvolvedores (com Docker Swarm e Kubernetes)
+https://www.udemy.com/share/104hwE3@dS36eW282ovuKZLWpjGXLksYdTo4uBV960h6aGWk0KiJDm2jFKYuCnPWthGnkEpS/
+
+Códigos Fontes que basearam estas anotações
+https://github.com/matheusbattisti/curso_docker.git
+
+
 > Written with [StackEdit](https://stackedit.io/).
