@@ -345,6 +345,282 @@ Para verificarmos as caracteristicas de uma rede, como data de criação, ip, ti
 Pode-se utilizar o ID da REDE ao invés do nome para indocar qual rede inspecionar, e o resultado será o mesmo.
 
 
+## Docker Compose
+
+Trata-se de uma solução para gerenciar aexecução de multiplos contêineres e a gilizar o processo de criação e organização por meio de um arquivode instruções .yaml. O compose polpa o Devops de ter que criar e 'buildar' cada imagem e depois gerar seus respectivos contêineres, evitando a fadiga de ter que digitar várias instruções no terminal a cada vez que precisar altera-los, isso se torna muito útil quando a infraestrutura possui muito serviços, como: Banco de Dados, Cache, Web, Logs, Monitoramento etc.
+
+### Criando um arquivo de instruções
+
+Tudo começa com a criação de um arquivo chamado de *docker-compose.yml* na raiz do projeto. Esse arquivo deve conter todas as instruções necessárias para descrever cada contêiner que será gerado, como nome do serviço, imagem, portas de conexão, volumes, networks etc.
+
+#### Estrutura do arquivo docker-compose.yml
+
+A estrutura do arquivo deve seguir uma ordem de instruções organizadas em níveis hierárquicos definidos por identação utilizando espaços, nunca tabulação. Veja a seguir a ordem das instruções e seus respectivos comentários explicativos:
+
+~~~yaml
+version: "3.3"	# versão do docker
+ 
+services:	# A estrutura services define no seu escopo cada serviço oferecido à estrutura implementada
+  db: # definição do nome do serviço. Este nome fica a critério do desenvolvedor deste arquivo.
+    image:
+    volumes:
+	  - db-data:/var/lib/mysql
+    restart: always # Monitora o estado de execução do container e o reexecuta caso ele saio do estado de execução.
+    enviroment: # Definição das variáveis de ambinete do container
+	  MYSQL_ROOT_PASSWORD: <defina a senha aqui>
+	  MYSQL_DATABASE: <nome da base de dados>
+	  MYSQL_USER: <definição de usuario>
+	  MYSQL_PASSWORD: <definição da senha ao usuário que acabou de ser definido>
+
+  sistema_1: # definição do nome do serviço
+    depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+	 - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+	 # Aqui podem ser definidas uma ou mais dependencias.
+	image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
+	ports:
+	  - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+	restart: always
+	enviroment:
+	  WORDPRESS_DB_HOST: db:3306 # Define o host como sendo o serviço 'db' que está declarado acima, porém, definindo a porta padrão de conexão do mysql.
+	  WORDPRESS_DB_USER: <user>
+	  WORDPRESS_DB_PASSWORD: <password>
+	  WORDPRESS_DB_NAME: <db_name>
+volumes:
+  db_data: {}
+~~~
+ >  ##### Observações sobre as variáveis de ambiente
+ > As variáveis que acabaram de ser definbidas nos dois serviços do 'docker-compose.yaml' são variáveis definidas nos respectivos serviços, previstas na documentação do MySQL e Wordpress, respectivamente.
+
+
+### Executando o arquivo docker-compose.yml
+
+Para executar as definições descritas no arquivo docker-compose.yml, utiliza-se o comando: 
+``` # docker-compose up ```
+
+Este comando faz a leitura das instruções definidas no arquivo docker-compose.yml e as aplica no contêiner(serviço) que será gerado.
+
+Após executar esse comando, se não houver erro, o serviço wordpress poderá ser acessado pelo navegador por meio do endereço http://localhost:8000.
+
+Confira os serviços que estão sendo executados utilizando o comando:
+
+``` # docker ps ```
+
+### Parar os serviços
+
+Para parar os serviços, basta executar o comando:
+``` # docker-compose down ```
+
+Lembrando que o comando deverá ser executado no mesmo diretório do arquivo docker-compose.yml.
+
+
+## Variáveis de ambiente
+
+Na sessão acima, vimos como confeccionar um arquivo de definições para gerar alguns serviços com docker compose. Na definição dos serviços, precisamos declarar alguns enviroments, e alguns deles possuem infomações que são sensíveis (usuário e senha) que não devem ser de conhecimento de outras pessoas e não devem ser 'comitadas' para garantir a segurança do seu sistema. Pois bem, o docker compose fornece a possibilidade de definir essas variáveis de ambiente em um arquivo do tipo .env, que por sua vez deve ficar fora dos arquivos enviados ao repositório.
+
+Para organizar melhor, vamos definir as variáveis de ambiente em arquivos .env respectivos aos seus serviços.
+Crie um diretório na raiz do projeto com o nome de 'config', dentro dele crie dois arquivos .env, 'db.env' e 'wp.env' e copie as definiços dos enviroments para os respectivos arquivos.
+
+**db.env**
+~~~env
+MYSQL_ROOT_PASSWORD=<defina a senha aqui>
+MYSQL_DATABASE=<nome da base de dados>
+MYSQL_USER=<definição de usuario>
+MYSQL_PASSWORD=<definição da senha ao usuário que acabou de ser definido>
+~~~
+
+**wp.env**
+~~~.env
+WORDPRESS_DB_HOST=db:3306
+WORDPRESS_DB_USER=<user>
+WORDPRESS_DB_PASSWORD=<password>
+WORDPRESS_DB_NAME=<db_name>
+~~~
+
+Note que houve uma mudabnça na sintaxe, pois agora estamos trabalhando num arquivo do tipo .env, a mudança foi de ': ' para '=', isso mesmo, sem espaço.
+
+> É uma prática muito comum deixarmos no projeto padrão um arquivo .env.exemplo com as chaves definidas, porém sem os valores respectivos, para que quando o projeto for distribuido o outro usuário ja tenha um arquivo para poder ser preenchido. Ex:
+db.env.exemplo
+wp.env.exemplo
+
+A partir daí, a pessoa que for executar os serviços só precisará fazer uma cópia dos .env e renomea-los retirando o sufixo .exemplo do nome do arquivo e depois preencher as chaves com suas informações sensíveis.
+
+
+Feito isso, aogra o arquivo docker-compose.yml deverá ser modificado para ter acesso aos arquivos de enviroments.
+
+~~~yaml
+version: "3.3"	# versão do docker
+ 
+services:	# A estrutura services define no seu escopo cada serviço oferecido à estrutura implementada
+  db: # definição do nome do serviço. Este nome fica a critério do desenvolvedor deste arquivo.
+    image:
+    volumes:
+	  - db-data:/var/lib/mysql
+    restart: always # Monitora o estado de execução do container e o reexecuta caso ele saio do estado de execução.
+    env_file: # lista de arquivos de definiçõe de variáveis
+	  - ./config/db.env
+
+  sistema_1: # definição do nome do serviço
+    depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+	 - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+	 # Aqui podem ser definidas uma ou mais dependencias.
+	image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
+	ports:
+	  - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+	restart: always
+	env_file: # lista de arquivos de definiçõe de variáveis
+	  - ./config/wp.env
+volumes:
+  db_data: {}
+~~~
+Perceba que agora não é mais necessária a estrutura de enviroments, pois as definições foram todas transferidas pros arquivos .env, referenciados pela estrutura 'env_file', que pode conter uma ou mais referências de arquivos .env.
+
+> Não esqueça de colocar os arquivos do tipo .env no gitignore para que não sejam enviados ao repositório.
+
+
+Agora teste a funcionalidade das mudanças executando o comando:
+
+``` # docker-compose up -d```
+
+O terminal deverá ecoar algumas informações da criação dos volumes, e dentre eles, a criação das variáveis de sistema.
+
+
+``` # docker ps```
+Verifique os serviços em execução.
+
+## Redes (Networks)
+
+
+Por padrão, o Docker gera uma rede comum para os serviços, porém, essa rede não é excluiva dos serviços, pois é uma rede padrão e geral. Para definirmos uma rede excluiva aos serviços de um docker-compose.yaml, podemos fazer essa definição de forma fácil, acrescentando essa definição à sua estrutura. Ex:
+
+~~~yaml
+version: "3.3"	# versão do docker
+ 
+services:	# A estrutura services define no seu escopo cada serviço oferecido à estrutura implementada
+  db: # definição do nome do serviço. Este nome fica a critério do desenvolvedor deste arquivo.
+    image:
+    volumes:
+	  - db-data:/var/lib/mysql
+    restart: always # Monitora o estado de execução do container e o reexecuta caso ele saio do estado de execução.
+    env_file: # lista de arquivos de definiçõe de variáveis
+	  - ./config/db.env
+	networks:
+	  - backend
+
+  sistema_1: # definição do nome do serviço
+    depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+	 - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+	 # Aqui podem ser definidas uma ou mais dependencias.
+	image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
+	ports:
+	  - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+	restart: always
+	env_file: # lista de arquivos de definiçõe de variáveis
+	  - ./config/wp.env
+	networks:
+	  - backend
+volumes:
+  db_data: {}
+networks: # Criação das redes referenciadas nos serviços
+  backend:
+    drive: bridge # Por padrão o Docker Compose já cria a rede do tipo bridge, entao essa definição não seria necessária a não ser que a rede seja diferente o tipo bridge.  
+
+~~~
+
+
+Observe as alterações no 'docker-compose.yaml'. Foi criada para cada serviço uma definição que indica quais redes cada serviço será conectado, podendo ser conectado a nenhuma ou várias redes.
+Observe que tanto o serviço de Banco de dados (bd) quando o de Word Press(sistema_1) estão conectados à mesma rede.
+
+No final do arquivo docker-compose.yaml ainda temos a criação da rede referenciada.
+
+
+## Docker Compose com imagens personalizadas
+
+Até o momento, vimos a criação de serviços com o Docker Compose apenas utilizando imagens que estão no http://hub.docker.com, porém, podemos utilizar nossa própria imagem para criuar serviços. O processo de criação e build de uma imagem nós já vimos em capítulos passados, e aqui nada no processo de criação mudará, continuaremos a utilizar o Dockerfile e o comando de build para gerar uma imagem.
+Na raiz do projeto, crie um subprojeto que será o projeto da imagem pessonalizada, por exemplo:
+``` # mkdir meubackend ```
+``` # cd meubackend ```
+
+Crie o Dockerfile do meubackend de acordo com a imagem que deseja gerare finalmente dê o comando de build.
+
+``` # docker build -t meubackend .```
+
+
+Feito isso, agora vamos configurar o docker-compose.yaml para utilizar a imagem personalizada que acabou de ser 'buildada'. Para exemplificar essa mudança, irei colocar apenas parte do código do docker-compose.yaml.
+ ~~~yaml
+	sistema_1: # definição do nome do serviço
+      depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+	   - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+	 # Aqui podem ser definidas uma ou mais dependencias.
+	  image: meubackend # Definição da imagem docker e versão que o sistema irá utilizar 
+	  ports:
+	    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+	  restart: always
+	  env_file: # lista de arquivos de definiçõe de variáveis
+	    - ./config/wp.env
+	  networks:
+	    - backend
+ ~~~
+
+Veja que foi preciso mudar apenas o nome da imagem referenciada nas definições do serviço sistema_1. Com isso, o docker-compose já ira implementar a nossa imagem personalisada ao container/serviço gerado.
+
+Execute o comando para recriar os serviços e confira se agora a imagem é de fatop a imagem personalizada.
+
+ ### Fazendo o build das imagens de forma automatizada
+
+ Fazer o buil de uma ou duas imagens personalizadas não parece ser muito complicado, mas a medida que o nosso sistema for evoluindo, novas imagens serão acrescentadas ao projeto e chegará um momento onde já não será mais viável rebuildar as imagens a cada alteração. Dessa forma, o Docker Compose pode resulver esse possível problema de froma simples e de fácil implementação, bastando apenas uma nova diretriz no escopo de cada serviço que utiliza uma imagem personalizada, assim, sempre que necessário o docker compose ira fazer o rebuild das imagens de forma automatizada, sem a necessidade de termos que fazer esse trabalho. Veja o exemplo no trecho código a seguir:
+
+
+~~~yaml
+	sistema_1: # definição do nome do serviço
+      depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+	   - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+	 # Aqui podem ser definidas uma ou mais dependencias.
+	  build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
+	  image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
+	  ports:
+	    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+	  restart: always
+	  env_file: # lista de arquivos de definiçõe de variáveis
+	    - ./config/wp.env
+	  networks:
+	    - backend
+ ~~~
+
+Agora é a vez de rodaro ```# docker-compose up -d``` e verificar os serviços.
+
+
+## Volume Bind Mount no Docker Compose
+
+Como visto anteriormente, o recurso de bind mount nos ajuda a manter o nosso código atualizavel sem a necessidade de fazermos rebuild das nossas imagens a casa vez que mudarmos algo, pois bem, aqui no docker-compose.yaml isso também pode ser feito da mesma maneira. Confira no trecho de código do docker-compose.yaml.
+
+~~~yaml
+	sistema_1: # definição do nome do serviço
+      depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+	   - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+	 # Aqui podem ser definidas uma ou mais dependencias.
+	  build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
+	  image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
+	  ports:
+	    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+	  restart: always
+	  env_file: # lista de arquivos de definiçõe de variáveis
+	    - ./config/wp.env
+	  networks:
+	    - backend
+	  volumes:
+	    - "/home/usuario/projetos/sistema_1:/var/www/html"	
+ ~~~
+
+O que fizemos aqui foi especificar um diretprio da nossa maquina local, essa ai mesmo em que você está estudando e seus diretório de mapeamento no contêiner, ou seja, os conteúdos sempre estaram sincronizados. Agora ficou fácil altera/editar o conteúdo do nosso projeto sem a necessidade de fazer o rebuild da imagem para efetivar a mudança.
+Reexecute o ``` # docker-composer up -d ``` e confira essa mudança. Edite algum arquivo, pode ser a index.html do seu projeto e veja se as alterações surtem efeito ao acessar o serviço pelo navegador.
+
+Verifique os serviços do Compose com o comando ``` # docker-compose ps```.
+
+
+Com isso, chegamos ao fim de mais uma sessão de Docker.
+
+
+
 # Referências
 Docker Oficial
 https://docs.docker.com/get-docker/ 
@@ -363,3 +639,4 @@ https://github.com/matheusbattisti/curso_docker.git
 
 
 > Written with [StackEdit](https://stackedit.io/).
+
