@@ -376,11 +376,11 @@ services:	# A estrutura services define no seu escopo cada serviço oferecido à
     depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
        db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
        #Aqui podem ser definidas uma ou mais dependencias.
-	image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
-	ports:
+    image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
+    ports:
       - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
-	restart: always
-	enviroment:
+    restart: always
+    enviroment:
       WORDPRESS_DB_HOST: db:3306 # Define o host como sendo o serviço 'db' que está declarado acima, porém, definindo a porta padrão de conexão do mysql.
       WORDPRESS_DB_USER: <user>
       WORDPRESS_DB_PASSWORD: <password>
@@ -499,25 +499,25 @@ services:	# A estrutura services define no seu escopo cada serviço oferecido à
   db: # definição do nome do serviço. Este nome fica a critério do desenvolvedor deste arquivo.
     image:
     volumes:
-	  - db-data:/var/lib/mysql
+      - db-data:/var/lib/mysql
     restart: always # Monitora o estado de execução do container e o reexecuta caso ele saio do estado de execução.
     env_file: # lista de arquivos de definiçõe de variáveis
-	  - ./config/db.env
-	networks:
-	  - backend
+      - ./config/db.env
+    networks:
+      - backend
 
   sistema_1: # definição do nome do serviço
     depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
-	 - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-	 # Aqui podem ser definidas uma ou mais dependencias.
-	image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
-	ports:
-	  - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
-	restart: always
-	env_file: # lista de arquivos de definiçõe de variáveis
-	  - ./config/wp.env
-	networks:
-	  - backend
+     - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+     # Aqui podem ser definidas uma ou mais dependencias.
+    image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
+    ports:
+      - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+    restart: always
+    env_file: # lista de arquivos de definiçõe de variáveis
+      - ./config/wp.env
+    networks:
+      - backend
 volumes:
   db_data: {}
 networks: # Criação das redes referenciadas nos serviços
@@ -550,7 +550,7 @@ Feito isso, agora vamos configurar o docker-compose.yaml para utilizar a imagem 
 sistema_1: # definição do nome do serviço
   depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
     - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-  # Aqui podem ser definidas uma ou mais dependencias.
+    # Aqui podem ser definidas uma ou mais dependencias.
   image: meubackend # Definição da imagem docker e versão que o sistema irá utilizar 
   ports:
     - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
@@ -574,7 +574,7 @@ Execute o comando para recriar os serviços e confira se agora a imagem é de fa
 sistema_1: # definição do nome do serviço
   depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
     - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-   # Aqui podem ser definidas uma ou mais dependencias.
+    # Aqui podem ser definidas uma ou mais dependencias.
   build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
   image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
   ports:
@@ -597,18 +597,18 @@ Como visto anteriormente, o recurso de bind mount nos ajuda a manter o nosso có
 sistema_1: # definição do nome do serviço
   depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
     - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-	# Aqui podem ser definidas uma ou mais dependencias.
-      build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
-      image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
-      ports:
-        - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
-      restart: always
-      env_file: # lista de arquivos de definiçõe de variáveis
-        - ./config/wp.env
-        networks:
-        - backend
-      volumes:
-        - "/home/usuario/projetos/sistema_1:/var/www/html"	
+    # Aqui podem ser definidas uma ou mais dependencias.
+  build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
+  image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
+  ports:
+  - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a  egunda é a porta do serviço no contêiner.
+  restart: always
+  env_file: # lista de arquivos de definiçõe de variáveis
+  - ./config/wp.env
+  networks:
+  - backend
+  volumes:
+  - "/home/usuario/projetos/sistema_1:/var/www/html"	
  ~~~
 
 O que fizemos aqui foi especificar um diretprio da nossa maquina local, essa ai mesmo em que você está estudando e seus diretório de mapeamento no contêiner, ou seja, os conteúdos sempre estaram sincronizados. Agora ficou fácil altera/editar o conteúdo do nosso projeto sem a necessidade de fazer o rebuild da imagem para efetivar a mudança.
