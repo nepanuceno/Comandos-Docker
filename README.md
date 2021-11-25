@@ -364,27 +364,27 @@ services:	# A estrutura services define no seu escopo cada serviço oferecido à
   db: # definição do nome do serviço. Este nome fica a critério do desenvolvedor deste arquivo.
     image:
     volumes:
-	  - db-data:/var/lib/mysql
+      - db-data:/var/lib/mysql
     restart: always # Monitora o estado de execução do container e o reexecuta caso ele saio do estado de execução.
     enviroment: # Definição das variáveis de ambinete do container
-	  MYSQL_ROOT_PASSWORD: <defina a senha aqui>
-	  MYSQL_DATABASE: <nome da base de dados>
-	  MYSQL_USER: <definição de usuario>
-	  MYSQL_PASSWORD: <definição da senha ao usuário que acabou de ser definido>
+      MYSQL_ROOT_PASSWORD: <defina a senha aqui>
+      MYSQL_DATABASE: <nome da base de dados>
+      MYSQL_USER: <definição de usuario>
+      MYSQL_PASSWORD: <definição da senha ao usuário que acabou de ser definido>
 
   sistema_1: # definição do nome do serviço
     depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
-	 - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-	 # Aqui podem ser definidas uma ou mais dependencias.
+       db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+       #Aqui podem ser definidas uma ou mais dependencias.
 	image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
 	ports:
-	  - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+      - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
 	restart: always
 	enviroment:
-	  WORDPRESS_DB_HOST: db:3306 # Define o host como sendo o serviço 'db' que está declarado acima, porém, definindo a porta padrão de conexão do mysql.
-	  WORDPRESS_DB_USER: <user>
-	  WORDPRESS_DB_PASSWORD: <password>
-	  WORDPRESS_DB_NAME: <db_name>
+      WORDPRESS_DB_HOST: db:3306 # Define o host como sendo o serviço 'db' que está declarado acima, porém, definindo a porta padrão de conexão do mysql.
+      WORDPRESS_DB_USER: <user>
+      WORDPRESS_DB_PASSWORD: <password>
+      WORDPRESS_DB_NAME: <db_name>
 volumes:
   db_data: {}
 ~~~
@@ -454,21 +454,21 @@ services:	# A estrutura services define no seu escopo cada serviço oferecido à
   db: # definição do nome do serviço. Este nome fica a critério do desenvolvedor deste arquivo.
     image:
     volumes:
-	  - db-data:/var/lib/mysql
+      - db-data:/var/lib/mysql
     restart: always # Monitora o estado de execução do container e o reexecuta caso ele saio do estado de execução.
     env_file: # lista de arquivos de definiçõe de variáveis
-	  - ./config/db.env
+      - ./config/db.env
 
   sistema_1: # definição do nome do serviço
     depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
-	 - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-	 # Aqui podem ser definidas uma ou mais dependencias.
-	image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
-	ports:
-	  - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
-	restart: always
-	env_file: # lista de arquivos de definiçõe de variáveis
-	  - ./config/wp.env
+      - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+    # Aqui podem ser definidas uma ou mais dependencias.
+    image: wordpress:latest # Definição da imagem docker e versão que o sistema irá utilizar 
+    ports:
+      - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+    restart: always
+    env_file: # lista de arquivos de definiçõe de variáveis
+      - ./config/wp.env
 volumes:
   db_data: {}
 ~~~
@@ -547,18 +547,18 @@ Crie o Dockerfile do meubackend de acordo com a imagem que deseja gerare finalme
 
 Feito isso, agora vamos configurar o docker-compose.yaml para utilizar a imagem personalizada que acabou de ser 'buildada'. Para exemplificar essa mudança, irei colocar apenas parte do código do docker-compose.yaml.
  ~~~yaml
-	sistema_1: # definição do nome do serviço
-      depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
-	   - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-	 # Aqui podem ser definidas uma ou mais dependencias.
-	  image: meubackend # Definição da imagem docker e versão que o sistema irá utilizar 
-	  ports:
-	    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
-	  restart: always
-	  env_file: # lista de arquivos de definiçõe de variáveis
-	    - ./config/wp.env
-	  networks:
-	    - backend
+sistema_1: # definição do nome do serviço
+  depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+    - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+  # Aqui podem ser definidas uma ou mais dependencias.
+  image: meubackend # Definição da imagem docker e versão que o sistema irá utilizar 
+  ports:
+    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+  restart: always
+  env_file: # lista de arquivos de definiçõe de variáveis
+    - ./config/wp.env
+  networks:
+    - backend
  ~~~
 
 Veja que foi preciso mudar apenas o nome da imagem referenciada nas definições do serviço sistema_1. Com isso, o docker-compose já ira implementar a nossa imagem personalisada ao container/serviço gerado.
@@ -571,19 +571,19 @@ Execute o comando para recriar os serviços e confira se agora a imagem é de fa
 
 
 ~~~yaml
-	sistema_1: # definição do nome do serviço
-      depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
-	   - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-	 # Aqui podem ser definidas uma ou mais dependencias.
-	  build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
-	  image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
-	  ports:
-	    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
-	  restart: always
-	  env_file: # lista de arquivos de definiçõe de variáveis
-	    - ./config/wp.env
-	  networks:
-	    - backend
+sistema_1: # definição do nome do serviço
+  depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+    - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+   # Aqui podem ser definidas uma ou mais dependencias.
+  build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
+  image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
+  ports:
+    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+  restart: always
+  env_file: # lista de arquivos de definiçõe de variáveis
+    - ./config/wp.env
+  networks:
+    - backend
  ~~~
 
 Agora é a vez de rodaro ```# docker-compose up -d``` e verificar os serviços.
@@ -594,21 +594,21 @@ Agora é a vez de rodaro ```# docker-compose up -d``` e verificar os serviços.
 Como visto anteriormente, o recurso de bind mount nos ajuda a manter o nosso código atualizavel sem a necessidade de fazermos rebuild das nossas imagens a casa vez que mudarmos algo, pois bem, aqui no docker-compose.yaml isso também pode ser feito da mesma maneira. Confira no trecho de código do docker-compose.yaml.
 
 ~~~yaml
-	sistema_1: # definição do nome do serviço
-      depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
-	   - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
-	 # Aqui podem ser definidas uma ou mais dependencias.
-	  build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
-	  image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
-	  ports:
-	    - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
-	  restart: always
-	  env_file: # lista de arquivos de definiçõe de variáveis
-	    - ./config/wp.env
-	  networks:
-	    - backend
-	  volumes:
-	    - "/home/usuario/projetos/sistema_1:/var/www/html"	
+sistema_1: # definição do nome do serviço
+  depends_on: # definição das dependencias de outros serviços para que esse serviço funcionane
+    - db # Neste caso, o sistema_1 necessita do serviço de banco para poder funcionar
+	# Aqui podem ser definidas uma ou mais dependencias.
+      build: ./meubackend # diretorio do projeto da imagem, onde contem o Dockerfile
+      image: meubackend:1.0 # Definição da imagem docker e versão que o sistema irá utilizar 
+      ports:
+        - "8000:80" # Definição das portas de conexão, onde a primeira é a porta no cliente e a segunda é a porta do serviço no contêiner.
+      restart: always
+      env_file: # lista de arquivos de definiçõe de variáveis
+        - ./config/wp.env
+        networks:
+        - backend
+      volumes:
+        - "/home/usuario/projetos/sistema_1:/var/www/html"	
  ~~~
 
 O que fizemos aqui foi especificar um diretprio da nossa maquina local, essa ai mesmo em que você está estudando e seus diretório de mapeamento no contêiner, ou seja, os conteúdos sempre estaram sincronizados. Agora ficou fácil altera/editar o conteúdo do nosso projeto sem a necessidade de fazer o rebuild da imagem para efetivar a mudança.
